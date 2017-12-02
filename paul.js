@@ -52,6 +52,7 @@ Osc.prototype.to = function () {
 }
 
 Osc.prototype.over = function (ms) {
+  if (this.interval) clearInterval(this.interval);
   let intervals = 0;
   const inveralMs = 20;
   const targetIntervals = ms / inveralMs;
@@ -67,7 +68,7 @@ Osc.prototype.over = function (ms) {
   //FREQUENCY
   if (this.mod.frequency !== undefined) {
     const freqDifference = -(this.oscillator.frequency.value - this.mod.frequency);
-    freqPerInterval = freqDifference / targetIntervals;
+    freqPerInterval = (freqDifference / targetIntervals);
   }
   //GAIN
   if (this.mod.gain !== undefined) {
@@ -75,15 +76,15 @@ Osc.prototype.over = function (ms) {
     gainPerInterval = gainDifference / targetIntervals;
   }
   //INTERVAL
-  const mod = setInterval(() => {
+  this.interval = setInterval(() => {
+    intervals++;
     if (intervals === targetIntervals) {
-      clearInterval(mod);
+      clearInterval(this.interval);
       this.mod = null;
     }
     if (panPerInterval) this.pannerNode.pan.value += (panPerInterval / 50);
     if (freqPerInterval) this.oscillator.frequency.value += (freqPerInterval);
     if (gainPerInterval) this.gainNode.gain.value += (gainPerInterval);
-    intervals++;
   }, inveralMs);
 }
 
@@ -149,11 +150,10 @@ Osc.prototype.note = function(note) {
       break;
     case 'B': frequency = 493.88;
       break;
-    default: frequency = 523.25;
+    default: frequency = 261.63;
   }
   if (this.mod) {
-    if (!this.mod.frequency) this.mod.frequency = frequency * this.multiplier;
-    else this.mod.frequency *= this.multiplier;
+    this.mod.frequency = frequency * this.multiplier;
     this.freqWithoutMultiplier = frequency;
     return this;
   }
@@ -187,8 +187,7 @@ Osc.prototype.octave = function(octave) {
     default: multiplier = 1;
   }
   if (this.mod) {
-    if (!this.mod.frequency) this.mod.frequency = this.freqWithoutMultiplier * multiplier;
-    else this.mod.frequency *= multiplier;
+    this.mod.frequency = this.freqWithoutMultiplier * multiplier;
     this.multiplier = multiplier;
     return this;
   }
