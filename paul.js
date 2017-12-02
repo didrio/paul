@@ -57,7 +57,7 @@ Osc.prototype.over = function (ms) {
   const targetIntervals = ms / inveralMs;
   let panPerInterval, freqPerInterval, gainPerInterval;
   //PAN
-  if (this.mod.pan) {
+  if (this.mod.pan !== undefined) {
     if (this.mod.pan * 50 < -50) this.mod.pan = -1;
     else if (this.mod.pan * 50 > 50) this.mod.pan = 1;
     let panDifference = Math.abs(this.pannerNode.pan.value * 50) + Math.abs(this.mod.pan * 50);
@@ -65,9 +65,14 @@ Osc.prototype.over = function (ms) {
     panPerInterval = panDifference / targetIntervals;
   }
   //FREQUENCY
-  if (this.mod.frequency) {
+  if (this.mod.frequency !== undefined) {
     const freqDifference = -(this.oscillator.frequency.value - this.mod.frequency);
     freqPerInterval = freqDifference / targetIntervals;
+  }
+  //GAIN
+  if (this.mod.gain !== undefined) {
+    const gainDifference = -(this.gainNode.gain.value - this.mod.gain);
+    gainPerInterval = gainDifference / targetIntervals;
   }
   //INTERVAL
   const mod = setInterval(() => {
@@ -77,6 +82,7 @@ Osc.prototype.over = function (ms) {
     }
     if (panPerInterval) this.pannerNode.pan.value += (panPerInterval / 50);
     if (freqPerInterval) this.oscillator.frequency.value += (freqPerInterval);
+    if (gainPerInterval) this.gainNode.gain.value += (gainPerInterval);
     intervals++;
   }, inveralMs);
 }
